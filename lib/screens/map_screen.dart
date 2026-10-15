@@ -7,6 +7,7 @@ import '../engine/sfx.dart';
 import '../l10n/strings.dart';
 import '../theme/app_theme.dart';
 import '../widgets/kids_icon.dart';
+import 'download_screen.dart';
 import 'lesson_screen.dart';
 import 'parent_dashboard.dart';
 
@@ -162,9 +163,66 @@ class _XpChip extends StatelessWidget {  final int xp;
   }
 }
 
-class _MapBody extends StatelessWidget {
+class _MapBody extends StatefulWidget {
   final GameState state;
   const _MapBody({required this.state});
+
+  @override
+  State<_MapBody> createState() => _MapBodyState();
+}
+
+class _MapBodyState extends State<_MapBody> {
+  /// Session flag: after the user skips the audio prompt once, don't nag
+  /// again until the next app launch. (A persistent "Download" button stays
+  /// in the World 2 header while the pack is missing.)
+  bool _promptDismissed = false;
+
+  GameState get state => widget.state;
+
+  /// Opens a lesson. The first tap on a Juz Amma lesson (per launch) shows
+  /// the one-time recitation download prompt — only World 2 needs the MP3s;
+  /// World 1 (Qaida) uses on-device TTS, so the app opens straight into play.
+  void _openLesson(BuildContext context, MapNode node) {
+    Sfx.pop();
+    final lesson = state.lessonForNode(node);
+    void pushLesson() {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => LessonScreen(lesson: lesson, state: state),
+        ),
+      );
+    }
+
+    if (node.worldId == 'juzAmma' &&
+        state.needsAudioDownload &&
+        !_promptDismissed) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => DownloadScreen(
+            state: state,
+            onDone: () {
+              if (mounted) setState(() => _promptDismissed = true);
+              Navigator.of(context).pop();
+              pushLesson();
+            },
+          ),
+        ),
+      );
+      return;
+    }
+    pushLesson();
+  }
+
+  void _openAudioDownload(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DownloadScreen(
+          state: state,
+          onDone: () => Navigator.of(context).pop(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,22 +236,40 @@ class _MapBody extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 16),
       itemCount: state.worlds.length,
-      itemBuilder: (_, wi) {
+      itemBuilder: (context, wi) {
         final world = state.worlds[wi];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-              child: Text(
-                world.titleIn(state.lang.code),
-                style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: KidsTheme.ink),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      world.titleIn(state.lang.code),
+                      style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: KidsTheme.ink),
+                    ),
+                  ),
+                  if (world.id == 'juzAmma' && state.needsAudioDownload)
+                    TextButton.icon(
+                      onPressed: () => _openAudioDownload(context),
+                      icon: const KidsIcon('download', size: 26),
+                      label: const Text('Download',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w800)),
+                    ),
+                ],
               ),
             ),
-            ...world.nodes.map((n) => _NodeRow(state: state, node: n)),
+            ...world.nodes.map((n) => _NodeRow(
+                  state: state,
+                  node: n,
+                  onOpenLesson: _openLesson,
+                )),
             const SizedBox(height: 12),
           ],
         );
@@ -205,8 +281,10 @@ class _MapBody extends StatelessWidget {
 class _NodeRow extends StatelessWidget {
   final GameState state;
   final MapNode node;
+  final void Function(BuildContext context, MapNode node) onOpenLesson;
 
-  const _NodeRow({required this.state, required this.node});
+  const _NodeRow(
+      {required this.state, required this.node, required this.onOpenLesson});
 
   @override
   Widget build(BuildContext context) {
@@ -227,17 +305,7 @@ class _NodeRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
         child: GestureDetector(
           onTap: unlocked
-              ? () {
-                  Sfx.pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => LessonScreen(
-                        lesson: state.lessonForNode(node),
-                        state: state,
-                      ),
-                    ),
-                  );
-                }
+              ? () => onOpenLesson(context, node)
               : () => Sfx.error(),
           child: Column(
             children: [

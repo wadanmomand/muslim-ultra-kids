@@ -4,7 +4,6 @@ import 'ads/ads_service.dart';
 import 'engine/daily_ayah.dart';
 import 'engine/game_state.dart';
 import 'l10n/strings.dart';
-import 'screens/download_screen.dart';
 import 'screens/map_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -37,28 +36,18 @@ class MuslimUltraKidsApp extends StatefulWidget {
 }
 
 class _MuslimUltraKidsAppState extends State<MuslimUltraKidsApp> {
-  bool _downloadDismissed = false;
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: widget.state,
       builder: (_, _) {
-        final showDownload =
-            widget.state.needsAudioDownload && !_downloadDismissed;
         return MaterialApp(
           title: widget.state.strings.get('appName'),
           theme: KidsTheme.light,
           debugShowCheckedModeBanner: false,
           home: Directionality(
             textDirection: widget.state.lang.direction,
-            child: showDownload
-                ? DownloadScreen(
-                    state: widget.state,
-                    onDone: () =>
-                        setState(() => _downloadDismissed = true),
-                  )
-                : MapScreen(state: widget.state),
+            child: MapScreen(state: widget.state),
           ),
         );
       },
