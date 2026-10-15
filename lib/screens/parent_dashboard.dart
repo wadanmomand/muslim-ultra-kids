@@ -109,19 +109,6 @@ class _ParentDashboardState extends State<ParentDashboard> {
     final ink = KidsTheme.inkFor(isDark);
     return Scaffold(
       appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Material(
-            color: KidsTheme.cardFor(isDark),
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => Navigator.of(context).pop(),
-              child: Icon(Icons.arrow_back,
-                  color: isDark ? Colors.white : KidsTheme.tealDark),
-            ),
-          ),
-        ),
         title: Text(
           strings.get('forParents'),
           style: TextStyle(fontWeight: FontWeight.w900, color: ink),
