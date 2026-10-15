@@ -375,7 +375,7 @@ class _StatsGrid extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          KidsIcon(c.$1, size: 34),
+                          KidsIcon(c.$1, size: 44),
                           const SizedBox(height: 4),
                           Text(c.$2,
                               style: TextStyle(

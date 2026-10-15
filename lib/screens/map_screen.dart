@@ -7,6 +7,7 @@ import '../engine/models.dart';
 import '../engine/sfx.dart';
 import '../l10n/strings.dart';
 import '../theme/app_theme.dart';
+import '../widgets/bubble_text.dart';
 import '../widgets/kids_drawer.dart';
 import '../widgets/kids_icon.dart';
 import 'download_screen.dart';
@@ -29,10 +30,7 @@ class MapScreen extends StatelessWidget {
       drawer: KidsMenuDrawer(state: state),
       appBar: AppBar(
         leading: Builder(builder: (ctx) => const MenuButton()),
-        title: Text(
-          strings.get('appName'),
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: BubbleText(strings.get('appName'), fontSize: 24),
       ),
       body: Container(
         decoration: BoxDecoration(gradient: KidsTheme.bgFor(state.isDark)),
@@ -245,8 +243,50 @@ class _TrailPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _NodeRow extends StatelessWidget {
-  final GameState state;
+/// One shared white pill holding 1-3 big bare 3D stars (no per-star badges,
+/// so the stars stay large enough to read as 3D). The star PNGs have baked
+/// white backgrounds that blend into the pill.
+class _StarPill extends StatelessWidget {
+  final int count;
+  const _StarPill({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFE9EEF5)],
+        ),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(
+          count.clamp(1, 3),
+          (_) => const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 2),
+            child: ClipOval(
+              child: Image(
+                image: AssetImage('assets/icons/star.png'),
+                width: 30,
+                height: 30,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NodeRow extends StatelessWidget {  final GameState state;
   final MapNode node;
   final bool unlocked;
   final void Function(BuildContext context, MapNode node) onOpenLesson;
@@ -279,8 +319,8 @@ class _NodeRow extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                width: 88,
-                height: 88,
+                width: 100,
+                height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
@@ -312,25 +352,17 @@ class _NodeRow extends StatelessWidget {
                 child: Center(
                   child: unlocked
                       ? (stars > 0
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: List.generate(
-                                  stars,
-                                  (_) => const Padding(
-                                        padding:
-                                            EdgeInsets.symmetric(horizontal: 1),
-                                        child: KidsIcon('star', size: 20),
-                                      )))
+                          ? _StarPill(count: stars)
                           : Text('${node.order + 1}',
                               style: const TextStyle(
-                                  fontSize: 26, fontWeight: FontWeight.w800)))
-                      : const KidsIcon('lock', size: 34),
+                                  fontSize: 30, fontWeight: FontWeight.w800)))
+                      : const KidsIcon('lock', size: 56),
                 ),
               ),
               if (node.isBoss && unlocked)
                 const Padding(
                   padding: EdgeInsets.only(top: 2),
-                  child: KidsIcon('crown', size: 26),
+                  child: KidsIcon('crown', size: 34),
                 ),
             ],
           ),

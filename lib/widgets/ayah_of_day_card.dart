@@ -55,7 +55,7 @@ class _AyahOfTheDayCardState extends State<AyahOfTheDayCard> {
                 KidsIconLabel(
                   'moon',
                   strings.get('ayahOfTheDay'),
-                  iconSize: 22,
+                  iconSize: 30,
                   style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
@@ -84,9 +84,9 @@ class _AyahOfTheDayCardState extends State<AyahOfTheDayCard> {
             ),
           ),
           IconButton(
-            iconSize: 48,
+            iconSize: 64,
             onPressed: _playing ? null : () => _play(ayah),
-            icon: KidsIcon(_playing ? 'hourglass' : 'speaker', size: 48),
+            icon: KidsIcon(_playing ? 'hourglass' : 'speaker', size: 64),
           ),
         ],
       ),

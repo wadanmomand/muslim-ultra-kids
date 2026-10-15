@@ -121,7 +121,7 @@ class _StatsRow extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        KidsIcon(c.$1, size: 30),
+                        KidsIcon(c.$1, size: 40),
                         const SizedBox(height: 2),
                         Text(c.$2,
                             style: TextStyle(

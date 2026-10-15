@@ -28,9 +28,10 @@ class KidsStrings {
 
   static const _t = <String, Map<KidsLang, String>>{
     'appName': {
+      // Brand name stays in English in every language (user rule).
       KidsLang.en: 'Muslim Ultra Kids',
-      KidsLang.ur: 'مسلم الٹرا کڈز',
-      KidsLang.ar: 'مسلم ألترا كيدز',
+      KidsLang.ur: 'Muslim Ultra Kids',
+      KidsLang.ar: 'Muslim Ultra Kids',
     },
     'start': {
       KidsLang.en: 'Start',

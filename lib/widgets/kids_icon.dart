@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// 3D icon displayed in a white circular badge.
+/// 3D icon displayed in a glossy white medallion.
 ///
-/// The icon PNGs are AI-generated 3D renders (assets/icons/*.png). Their
-/// backgrounds are baked white, so they are always shown inside this white
-/// badge — backgrounds are never removed programmatically (user rule).
+/// The icon PNGs are AI-generated 3D renders (assets/icons/*.png) with baked
+/// white backgrounds, so they are always shown inside this medallion — the
+/// white badge blends with the baked background, and the glossy gradient +
+/// highlight ring gives the 3D coin feel. Backgrounds are never removed
+/// programmatically (user rule).
 class KidsIcon extends StatelessWidget {
   final String name;
   final double size;
@@ -17,23 +19,36 @@ class KidsIcon extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white,
         shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFE9EEF5)],
+        ),
+        border: Border.all(color: Colors.white, width: size * 0.06),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: size * 0.12,
+            offset: Offset(0, size * 0.06),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.9),
+            blurRadius: size * 0.06,
+            offset: Offset(0, -size * 0.03),
           ),
         ],
       ),
-      padding: EdgeInsets.all(size * 0.14),
-      child: Image.asset(
-        'assets/icons/$name.png',
-        width: size,
-        height: size,
-        errorBuilder: (_, _, _) =>
-            Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
+      padding: EdgeInsets.all(size * 0.12),
+      child: ClipOval(
+        child: Image.asset(
+          'assets/icons/$name.png',
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) =>
+              Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
+        ),
       ),
     );
   }

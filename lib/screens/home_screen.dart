@@ -173,7 +173,7 @@ class _WorldCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              KidsIcon(icon, size: 54),
+              KidsIcon(icon, size: 68),
               const SizedBox(height: 8),
               Text(
                 title,
