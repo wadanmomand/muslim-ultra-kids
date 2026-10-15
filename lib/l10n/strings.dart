@@ -107,6 +107,46 @@ class KidsStrings {
       KidsLang.ur: 'کھیلیں',
       KidsLang.ar: 'العب',
     },
+    'reciter': {
+      KidsLang.en: 'Reciter',
+      KidsLang.ur: 'قاری',
+      KidsLang.ar: 'القارئ',
+    },
+    'dailyAyahReminder': {
+      KidsLang.en: 'Daily Ayah reminder',
+      KidsLang.ur: 'روزانہ آیت کی یاد دہانی',
+      KidsLang.ar: 'تذكير آية اليوم',
+    },
+    'sendEveryMorning': {
+      KidsLang.en: 'Send every morning',
+      KidsLang.ur: 'ہر صبح بھیجیں',
+      KidsLang.ar: 'أرسل كل صباح',
+    },
+    'about': {
+      KidsLang.en: 'About',
+      KidsLang.ur: 'تعارف',
+      KidsLang.ar: 'حول',
+    },
+    'resetProgress': {
+      KidsLang.en: 'Reset progress',
+      KidsLang.ur: 'پیش رفت ری سیٹ کریں',
+      KidsLang.ar: 'إعادة تعيين التقدم',
+    },
+    'resetConfirm': {
+      KidsLang.en: 'Reset all progress?',
+      KidsLang.ur: 'کیا تمام پیش رفت ری سیٹ کریں؟',
+      KidsLang.ar: 'هل تريد إعادة تعيين كل التقدم؟',
+    },
+    'cancel': {
+      KidsLang.en: 'Cancel',
+      KidsLang.ur: 'منسوخ کریں',
+      KidsLang.ar: 'إلغاء',
+    },
+    'reset': {
+      KidsLang.en: 'Reset',
+      KidsLang.ur: 'ری سیٹ',
+      KidsLang.ar: 'إعادة تعيين',
+    },
   };
 
   String get(String key) => _t[key]?[lang] ?? _t[key]?[KidsLang.en] ?? key;

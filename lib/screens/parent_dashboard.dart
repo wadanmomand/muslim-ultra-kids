@@ -105,18 +105,40 @@ class _ParentDashboardState extends State<ParentDashboard> {
   Widget build(BuildContext context) {
     final p = widget.state.progress;
     final strings = widget.state.strings;
+    final isDark = widget.state.isDark;
+    final ink = KidsTheme.inkFor(isDark);
     return Scaffold(
-      appBar: AppBar(title: Text(strings.get('forParents'))),
+      appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Material(
+            color: KidsTheme.cardFor(isDark),
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => Navigator.of(context).pop(),
+              child: Icon(Icons.arrow_back,
+                  color: isDark ? Colors.white : KidsTheme.tealDark),
+            ),
+          ),
+        ),
+        title: Text(
+          strings.get('forParents'),
+          style: TextStyle(fontWeight: FontWeight.w900, color: ink),
+        ),
+      ),
       body: Container(
-        decoration: BoxDecoration(gradient: KidsTheme.bgFor(widget.state.isDark)),
+        decoration:
+            BoxDecoration(gradient: KidsTheme.bgFor(widget.state.isDark)),
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           children: [
             _StatsGrid(p: p),
             const SizedBox(height: 16),
             _Section(
               icon: 'mic',
-              title: 'Reciter',
+              title: strings.get('reciter'),
+              isDark: isDark,
               child: RadioGroup<String>(
                 groupValue: p.reciterEdition,
                 onChanged: (v) =>
@@ -125,7 +147,9 @@ class _ParentDashboardState extends State<ParentDashboard> {
                   children: AudioPackManager.editions
                       .map((e) => RadioListTile<String>(
                             title: Text(
-                                AudioPackManager.editionNames[e] ?? e),
+                              AudioPackManager.editionNames[e] ?? e,
+                              style: TextStyle(color: ink),
+                            ),
                             value: e,
                           ))
                       .toList(),
@@ -134,22 +158,28 @@ class _ParentDashboardState extends State<ParentDashboard> {
             ),
             _Section(
               icon: 'globe',
-              title: 'Language',
-              child: SegmentedButton<KidsLang>(
-                segments: KidsLang.values
-                    .map((l) =>
-                        ButtonSegment(value: l, label: Text(l.label)))
+              title: strings.get('language'),
+              isDark: isDark,
+              child: Wrap(
+                spacing: 10,
+                children: KidsLang.values
+                    .map((l) => _LangPill(
+                          label: l.label,
+                          selected: widget.state.lang == l,
+                          isDark: isDark,
+                          onTap: () =>
+                              setState(() => widget.state.setLang(l)),
+                        ))
                     .toList(),
-                selected: {widget.state.lang},
-                onSelectionChanged: (s) =>
-                    setState(() => widget.state.setLang(s.first)),
               ),
             ),
             _Section(
               icon: 'bell',
-              title: 'Daily Ayah reminder',
+              title: strings.get('dailyAyahReminder'),
+              isDark: isDark,
               child: SwitchListTile(
-                title: const Text('Send every morning'),
+                title: Text(strings.get('sendEveryMorning'),
+                    style: TextStyle(color: ink)),
                 value: _notifOn,
                 onChanged: (v) async {
                   setState(() => _notifOn = v);
@@ -167,14 +197,17 @@ class _ParentDashboardState extends State<ParentDashboard> {
             ),
             _Section(
               icon: 'info',
-              title: 'About',
-              child: const Text(
+              title: strings.get('about'),
+              isDark: isDark,
+              child: Text(
                 'Quran text: verified Uthmani script.\n'
                 'Recitation: Islamic Network (alquran.cloud) free CDN — '
                 'downloaded once, works offline. Copyrights belong to the '
                 'reciters; bundled under their free redistribution terms.\n'
                 'No accounts, no tracking, no ads in lessons.',
-                style: TextStyle(fontSize: 14),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white70 : Colors.black87),
               ),
             ),
             const SizedBox(height: 8),
@@ -182,11 +215,11 @@ class _ParentDashboardState extends State<ParentDashboard> {
               onPressed: () => showDialog(
                 context: context,
                 builder: (_) => AlertDialog(
-                  title: const Text('Reset all progress?'),
+                  title: Text(strings.get('resetConfirm')),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(strings.get('cancel')),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -196,16 +229,68 @@ class _ParentDashboardState extends State<ParentDashboard> {
                           setState(() {});
                         }
                       },
-                      child: const Text('Reset',
-                          style: TextStyle(color: Colors.red)),
+                      child: Text(strings.get('reset'),
+                          style: const TextStyle(color: Colors.red)),
                     ),
                   ],
                 ),
               ),
               icon: const KidsIcon('trash', size: 24),
-              label: const Text('Reset progress'),
+              label: Text(strings.get('resetProgress')),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LangPill extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _LangPill({
+    required this.label,
+    required this.selected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            color:
+                selected ? KidsTheme.tealDark : KidsTheme.cardFor(isDark),
+            border: Border.all(color: KidsTheme.tealDark, width: 2),
+            boxShadow: selected
+                ? const [
+                    BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, 2))
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: selected
+                  ? Colors.white
+                  : (isDark ? Colors.white : KidsTheme.tealDark),
+            ),
+          ),
         ),
       ),
     );
@@ -216,24 +301,36 @@ class _Section extends StatelessWidget {
   final String icon;
   final String title;
   final Widget child;
+  final bool isDark;
 
   const _Section(
-      {required this.icon, required this.title, required this.child});
+      {required this.icon,
+      required this.title,
+      required this.child,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    final ink = KidsTheme.inkFor(isDark);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: KidsTheme.cardFor(isDark),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3))
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             KidsIconLabel(icon, title,
-                iconSize: 28,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
+                iconSize: 30,
+                style: TextStyle(
+                    fontSize: 19, fontWeight: FontWeight.w900, color: ink)),
+            const SizedBox(height: 10),
             child,
           ],
         ),
@@ -248,6 +345,8 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = KidsTheme.inkFor(isDark);
     final cells = [
       ('lightning', '${p.xp}', 'XP'),
       ('star', '${p.totalStars}', 'Stars'),
@@ -258,25 +357,36 @@ class _StatsGrid extends StatelessWidget {
       children: cells
           .map((c) => Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Card(
-                    margin: EdgeInsets.zero,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: KidsTheme.cardFor(isDark),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 6,
+                            offset: Offset(0, 3))
+                      ],
+                    ),
                     child: Padding(
                       padding:
-                          const EdgeInsets.symmetric(vertical: 10),
+                          const EdgeInsets.symmetric(vertical: 12),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          KidsIcon(c.$1, size: 30),
+                          KidsIcon(c.$1, size: 34),
                           const SizedBox(height: 4),
                           Text(c.$2,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 20,
-                                  fontWeight: FontWeight.w900)),
+                                  fontWeight: FontWeight.w900,
+                                  color: ink)),
                           Text(c.$3,
                               textAlign: TextAlign.center,
-                              style:
-                                  const TextStyle(fontSize: 11)),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: ink.withValues(alpha: 0.65))),
                         ],
                       ),
                     ),
