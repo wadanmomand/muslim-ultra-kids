@@ -4,7 +4,7 @@ import 'ads/ads_service.dart';
 import 'engine/daily_ayah.dart';
 import 'engine/game_state.dart';
 import 'l10n/strings.dart';
-import 'screens/map_screen.dart';
+import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -44,10 +44,12 @@ class _MuslimUltraKidsAppState extends State<MuslimUltraKidsApp> {
         return MaterialApp(
           title: widget.state.strings.get('appName'),
           theme: KidsTheme.light,
+          darkTheme: KidsTheme.dark,
+          themeMode: widget.state.isDark ? ThemeMode.dark : ThemeMode.light,
           debugShowCheckedModeBanner: false,
           home: Directionality(
             textDirection: widget.state.lang.direction,
-            child: MapScreen(state: widget.state),
+            child: HomeScreen(state: widget.state),
           ),
         );
       },

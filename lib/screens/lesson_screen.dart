@@ -117,7 +117,7 @@ class _LessonScreenState extends State<LessonScreen> {
         centerTitle: true,
       ),
       body: Container(
-        decoration: const BoxDecoration(gradient: KidsTheme.skyGradient),
+        decoration: BoxDecoration(gradient: KidsTheme.bgFor(widget.state.isDark)),
         child: SafeArea(
           child: ListView(
             padding: const EdgeInsets.all(20),

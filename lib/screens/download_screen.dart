@@ -60,7 +60,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
     final ayahs = widget.state.neededAyahs.length;
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: KidsTheme.skyGradient),
+        decoration: BoxDecoration(gradient: KidsTheme.bgFor(widget.state.isDark)),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(28),

@@ -21,6 +21,7 @@ class GameState extends ChangeNotifier {
   }
 
   KidsLang lang = KidsLang.en;
+  bool isDark = false;
   Progress progress = const Progress();
   List<World> worlds = [];
   Map<String, Lesson> lessons = {};
@@ -51,6 +52,7 @@ class GameState extends ChangeNotifier {
         lang = KidsLang.values.byName(savedLang);
       } catch (_) {}
     }
+    isDark = store.getSetting('theme') == 'dark';
     await audioPacks.init();
     await loadContent();
     audioReady = audioPacks.isComplete;
@@ -82,6 +84,12 @@ class GameState extends ChangeNotifier {
   void setLang(KidsLang l) {
     lang = l;
     store.setSetting('lang', l.code);
+    notifyListeners();
+  }
+
+  void setDark(bool dark) {
+    isDark = dark;
+    store.setSetting('theme', dark ? 'dark' : 'light');
     notifyListeners();
   }
 

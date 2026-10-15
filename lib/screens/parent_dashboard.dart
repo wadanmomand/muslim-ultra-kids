@@ -108,7 +108,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
     return Scaffold(
       appBar: AppBar(title: Text(strings.get('forParents'))),
       body: Container(
-        decoration: const BoxDecoration(gradient: KidsTheme.skyGradient),
+        decoration: BoxDecoration(gradient: KidsTheme.bgFor(widget.state.isDark)),
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -254,22 +254,33 @@ class _StatsGrid extends StatelessWidget {
       ('book', '${p.lessonsCompleted}', 'Lessons'),
       ('fire', '${p.streakDays}', 'Day streak'),
     ];
-    return GridView.count(
-      crossAxisCount: 4,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    return Row(
       children: cells
-          .map((c) => Card(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    KidsIcon(c.$1, size: 30),
-                    const SizedBox(height: 4),
-                    Text(c.$2,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w900)),
-                    Text(c.$3, style: const TextStyle(fontSize: 11)),
-                  ],
+          .map((c) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Card(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          KidsIcon(c.$1, size: 30),
+                          const SizedBox(height: 4),
+                          Text(c.$2,
+                              style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900)),
+                          Text(c.$3,
+                              textAlign: TextAlign.center,
+                              style:
+                                  const TextStyle(fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ))
           .toList(),

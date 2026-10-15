@@ -107,18 +107,27 @@ void main() {
   });
 
   group('Progress.isNodeUnlocked', () {
-    test('first node always unlocked; next needs 1 star', () {
+    test('first node always unlocked; next needs 1 star on previous', () {
       const p = Progress();
-      expect(p.isNodeUnlocked(nodeOrder: 0, worldId: 'qaida'), isTrue);
-      expect(p.isNodeUnlocked(nodeOrder: 1, worldId: 'qaida'), isFalse);
+      expect(
+          p.isNodeUnlocked(lessonId: 'qaida-l01', prevLessonId: null), isTrue);
+      expect(
+          p.isNodeUnlocked(
+              lessonId: 'qaida-l02', prevLessonId: 'qaida-l01'),
+          isFalse);
 
       final p2 = p.completeLesson(
-        lessonId: 'qaida-lesson-0',
+        lessonId: 'qaida-l01',
         correct: 5,
         total: 10,
         today: '2026-10-12',
       );
-      expect(p2.isNodeUnlocked(nodeOrder: 1, worldId: 'qaida'), isTrue);
+      expect(
+          p2.isNodeUnlocked(
+              lessonId: 'qaida-l02', prevLessonId: 'qaida-l01'),
+          isTrue);
+      // Stars are keyed by real lesson id, so they show on the map.
+      expect(p2.bestStars['qaida-l01'], greaterThanOrEqualTo(1));
     });
   });
 

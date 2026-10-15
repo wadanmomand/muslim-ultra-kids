@@ -82,6 +82,31 @@ class KidsStrings {
       KidsLang.ur: 'آج کی آیت',
       KidsLang.ar: 'آية اليوم',
     },
+    'language': {
+      KidsLang.en: 'Language',
+      KidsLang.ur: 'زبان',
+      KidsLang.ar: 'اللغة',
+    },
+    'darkMode': {
+      KidsLang.en: 'Dark mode',
+      KidsLang.ur: 'ڈارک موڈ',
+      KidsLang.ar: 'الوضع الداكن',
+    },
+    'lightMode': {
+      KidsLang.en: 'Light mode',
+      KidsLang.ur: 'لائٹ موڈ',
+      KidsLang.ar: 'الوضع الفاتح',
+    },
+    'downloadAudio': {
+      KidsLang.en: 'Download audio',
+      KidsLang.ur: 'آڈیو ڈاؤن لوڈ کریں',
+      KidsLang.ar: 'تحميل الصوت',
+    },
+    'play': {
+      KidsLang.en: 'Play',
+      KidsLang.ur: 'کھیلیں',
+      KidsLang.ar: 'العب',
+    },
   };
 
   String get(String key) => _t[key]?[lang] ?? _t[key]?[KidsLang.en] ?? key;

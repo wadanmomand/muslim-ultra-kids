@@ -69,10 +69,12 @@ class Progress {
   }
 
   /// Map nodes unlock in order: node N unlocks when node N-1 has >= 1 star.
-  bool isNodeUnlocked({required int nodeOrder, required String worldId}) {
-    if (nodeOrder == 0) return true;
-    // Lesson ids follow '<worldId>-lesson-<order>' convention.
-    final prevLessonId = '$worldId-lesson-${nodeOrder - 1}';
+  /// A node is unlocked when it is the first in its world ([prevLessonId]
+  /// is null), or the previous node in order earned at least 1 star.
+  /// Uses real lesson ids — bundled node orders are 1-based, so the
+  /// "order == 0" convention must NOT be used here.
+  bool isNodeUnlocked({required String lessonId, String? prevLessonId}) {
+    if (prevLessonId == null) return true;
     return (bestStars[prevLessonId] ?? 0) >= 1;
   }
 

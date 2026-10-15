@@ -1,54 +1,46 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
-import '../engine/daily_ayah.dart';
 import '../engine/game_state.dart';
 import '../engine/models.dart';
 import '../engine/sfx.dart';
 import '../l10n/strings.dart';
 import '../theme/app_theme.dart';
+import '../widgets/kids_drawer.dart';
 import '../widgets/kids_icon.dart';
 import 'download_screen.dart';
 import 'lesson_screen.dart';
-import 'parent_dashboard.dart';
 
 /// Adventure map: worlds as sections, lessons as nodes on a winding path.
 /// Banner ad in the footer; lessons themselves stay ad-free.
 class MapScreen extends StatelessWidget {
   final GameState state;
 
-  const MapScreen({super.key, required this.state});
+  /// When set, the map auto-scrolls to this world (tapped from the home page).
+  final String? focusWorldId;
+
+  const MapScreen({super.key, required this.state, this.focusWorldId});
 
   @override
   Widget build(BuildContext context) {
     final strings = state.strings;
     return Scaffold(
+      drawer: KidsMenuDrawer(state: state),
       appBar: AppBar(
-        title: Text(strings.get('appName')),
-        actions: [
-          _XpChip(xp: state.progress.xp),
-          IconButton(
-            tooltip: strings.get('forParents'),
-            icon: const KidsIcon('family', size: 36),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (_) => ParentGate(state: state),
-            ),
-          ),
-          PopupMenuButton<KidsLang>(
-            icon: const KidsIcon('globe', size: 36),
-            onSelected: state.setLang,
-            itemBuilder: (_) => KidsLang.values
-                .map((l) => PopupMenuItem(value: l, child: Text(l.label)))
-                .toList(),
-          ),
-        ],
+        leading: Builder(builder: (ctx) => const MenuButton()),
+        title: Text(
+          strings.get('appName'),
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
       ),
       body: Container(
-        decoration: const BoxDecoration(gradient: KidsTheme.skyGradient),
+        decoration: BoxDecoration(gradient: KidsTheme.bgFor(state.isDark)),
         child: Column(
           children: [
-            _AyahOfTheDayCard(state: state),
-            Expanded(child: _MapBody(state: state)),
+            Expanded(
+              child: _MapBody(state: state, focusWorldId: focusWorldId),
+            ),
             const BannerAdFooter(),
           ],
         ),
@@ -57,121 +49,21 @@ class MapScreen extends StatelessWidget {
   }
 }
 
-/// Ayah of the Day card: bundled ayah + meaning + recitation playback.
-class _AyahOfTheDayCard extends StatefulWidget {
-  final GameState state;
-  const _AyahOfTheDayCard({required this.state});
-
-  @override
-  State<_AyahOfTheDayCard> createState() => _AyahOfTheDayCardState();
-}
-
-class _AyahOfTheDayCardState extends State<_AyahOfTheDayCard> {
-  bool _playing = false;
-
-  Future<void> _play(DailyAyah ayah) async {
-    setState(() => _playing = true);
-    try {
-      final src = await widget.state.audio.resolveAyah(
-        ayah.globalAyahNumber,
-        widget.state.progress.reciterEdition,
-      );
-      if (src != null) await widget.state.audio.play(src);
-    } finally {
-      if (mounted) setState(() => _playing = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ayah = ayahForDate(DateTime.now());
-    final strings = widget.state.strings;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                KidsIconLabel(
-                  'moon',
-                  strings.get('ayahOfTheDay'),
-                  iconSize: 22,
-                  style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: KidsTheme.tealDark),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  ayah.text,
-                  textDirection: TextDirection.rtl,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  ayah.meaningIn(strings.lang.code),
-                  style: const TextStyle(fontSize: 13, color: Colors.black54),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            iconSize: 48,
-            onPressed: _playing ? null : () => _play(ayah),
-            icon: KidsIcon(_playing ? 'hourglass' : 'speaker', size: 48),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _XpChip extends StatelessWidget {  final int xp;
-  const _XpChip({required this.xp});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: KidsTheme.gold,
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const KidsIcon('lightning', size: 22),
-          const SizedBox(width: 4),
-          Text(
-            '$xp',
-            style: const TextStyle(
-                fontWeight: FontWeight.w800, color: KidsTheme.ink),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _MapBody extends StatefulWidget {
   final GameState state;
-  const _MapBody({required this.state});
+  const _MapBody({required this.state, this.focusWorldId});
+
+  /// When set, the map auto-scrolls to this world (tapped from the home page).
+  final String? focusWorldId;
 
   @override
   State<_MapBody> createState() => _MapBodyState();
 }
 
 class _MapBodyState extends State<_MapBody> {
+  final Map<String, GlobalKey> _worldKeys = {};
+  bool _focusScrolled = false;
   /// Session flag: after the user skips the audio prompt once, don't nag
   /// again until the next app launch. (A persistent "Download" button stays
   /// in the World 2 header while the pack is missing.)
@@ -233,14 +125,35 @@ class _MapBodyState extends State<_MapBody> {
       }
       return const Center(child: CircularProgressIndicator());
     }
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      itemCount: state.worlds.length,
-      itemBuilder: (context, wi) {
-        final world = state.worlds[wi];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    if (!_focusScrolled) {
+      _focusScrolled = true;
+      final focus = widget.focusWorldId;
+      if (focus != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final key = _worldKeys[focus];
+          if (key?.currentContext != null) {
+            Scrollable.ensureVisible(key!.currentContext!,
+                duration: const Duration(milliseconds: 600),
+                alignment: 0.1);
+          }
+        });
+      }
+    }
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: CustomPaint(painter: _TrailPainter()),
+        ),
+        ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          itemCount: state.worlds.length,
+          itemBuilder: (context, wi) {
+            final world = state.worlds[wi];
+            final key = _worldKeys.putIfAbsent(world.id, () => GlobalKey());
+            return Column(
+              key: key,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
               child: Row(
@@ -248,10 +161,10 @@ class _MapBodyState extends State<_MapBody> {
                   Expanded(
                     child: Text(
                       world.titleIn(state.lang.code),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
-                          color: KidsTheme.ink),
+                          color: KidsTheme.inkFor(state.isDark)),
                     ),
                   ),
                   if (world.id == 'juzAmma' && state.needsAudioDownload)
@@ -265,26 +178,85 @@ class _MapBodyState extends State<_MapBody> {
                 ],
               ),
             ),
-            ...world.nodes.map((n) => _NodeRow(
-                  state: state,
-                  node: n,
-                  onOpenLesson: _openLesson,
-                )),
+            ...world.nodes.map((n) {
+              final idx = world.nodes.indexOf(n);
+              final prevId = idx > 0 ? world.nodes[idx - 1].lessonId : null;
+              return _NodeRow(
+                state: state,
+                node: n,
+                unlocked: state.progress.isNodeUnlocked(
+                  lessonId: n.lessonId,
+                  prevLessonId: prevId,
+                ),
+                onOpenLesson: _openLesson,
+              );
+            }),
             const SizedBox(height: 12),
           ],
         );
       },
+        ),
+      ],
     );
   }
+}
+
+/// Paints a soft dashed winding trail behind the lesson nodes — the 3D map's
+/// candy path.
+class _TrailPainter extends CustomPainter {
+  const _TrailPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.55)
+      ..strokeWidth = 14
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final path = Path();
+    const dash = 10.0;
+    const gap = 14.0;
+    var dist = 0.0;
+    const step = 6.0;
+    var drawing = true;
+    var prev = Offset(size.width / 2, 0);
+    path.moveTo(prev.dx, prev.dy);
+    for (var y = step; y <= size.height + step; y += step) {
+      final x = size.width / 2 + size.width * 0.28 * math.sin(y / 140);
+      final p = Offset(x, y);
+      dist += (p - prev).distance;
+      if (dist >= (drawing ? dash : gap)) {
+        if (drawing) {
+          path.lineTo(p.dx, p.dy);
+        } else {
+          path.moveTo(p.dx, p.dy);
+        }
+        dist = 0;
+        drawing = !drawing;
+      } else if (drawing) {
+        path.lineTo(p.dx, p.dy);
+      }
+      prev = p;
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _NodeRow extends StatelessWidget {
   final GameState state;
   final MapNode node;
+  final bool unlocked;
   final void Function(BuildContext context, MapNode node) onOpenLesson;
 
-  const _NodeRow(
-      {required this.state, required this.node, required this.onOpenLesson});
+  const _NodeRow({
+    required this.state,
+    required this.node,
+    required this.unlocked,
+    required this.onOpenLesson,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -294,10 +266,7 @@ class _NodeRow extends StatelessWidget {
       1 => Alignment.center,
       _ => Alignment.centerRight,
     };
-    final unlocked =
-        state.progress.isNodeUnlocked(nodeOrder: node.order, worldId: node.worldId);
-    final stars =
-        state.progress.bestStars['${node.worldId}-lesson-${node.order}'] ?? 0;
+    final stars = state.progress.bestStars[node.lessonId] ?? 0;
 
     return Align(
       alignment: align,
@@ -310,17 +279,34 @@ class _NodeRow extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                width: 84,
-                height: 84,
+                width: 88,
+                height: 88,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: unlocked ? KidsTheme.gold : KidsTheme.starGrey,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: unlocked
+                        ? const [
+                            Color(0xFFFFD964),
+                            KidsTheme.gold,
+                            KidsTheme.goldDark
+                          ]
+                        : const [Color(0xFFE3E8EF), Color(0xFFC3CCD8)],
+                  ),
                   border: Border.all(
                     color: node.isBoss ? KidsTheme.tealDark : Colors.white,
                     width: node.isBoss ? 5 : 4,
                   ),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 6)
+                    BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 8,
+                        offset: Offset(0, 4)),
+                    BoxShadow(
+                        color: Colors.white54,
+                        blurRadius: 3,
+                        offset: Offset(0, -3)),
                   ],
                 ),
                 child: Center(
