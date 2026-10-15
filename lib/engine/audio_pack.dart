@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -68,8 +69,10 @@ class AudioPackManager {
       editions.every((e) => (_manifest[e] ?? []).isNotEmpty);
 
   /// Downloads [ayahs] for both reciters. Reports 0.0-1.0 progress.
-  /// Skips files already present. Throws on persistent failure.
-  Future<void> downloadAll(
+  /// Skips files already present. Returns the number of files that failed
+  /// after retries (0 = complete). Never throws for per-file network
+  /// errors — callers decide how to surface [failedCount].
+  Future<int> downloadAll(
     Set<int> ayahs, {
     void Function(double progress)? onProgress,
   }) async {
@@ -84,24 +87,59 @@ class AudioPackManager {
     if (jobs.isEmpty) {
       await _saveManifest(ayahs);
       onProgress?.call(1.0);
-      return;
+      return 0;
     }
 
     final client = HttpClient();
+    var failed = 0;
     try {
       var done = 0;
       for (final job in jobs) {
-        await _downloadOne(client, job);
+        try {
+          await withRetry(
+            () => _fetchOne(client, job).timeout(
+              const Duration(seconds: 30),
+              onTimeout: () => throw TimeoutException(
+                  'Audio download timed out: ${job.edition}/${job.ayah}'),
+            ),
+          );
+        } catch (e) {
+          debugPrint('audio download gave up: ${job.edition}/${job.ayah}: $e');
+          failed++;
+        }
         done++;
         onProgress?.call(done / jobs.length);
       }
     } finally {
       client.close(force: true);
     }
-    await _saveManifest(ayahs);
+    if (failed == 0) {
+      await _saveManifest(ayahs);
+    }
+    return failed;
   }
 
-  Future<void> _downloadOne(HttpClient client, _Job job) async {
+  /// Runs [op] up to [attempts] times with exponential backoff
+  /// (1s, 2s, 4s …). Rethrows the last error when all attempts fail.
+  static Future<T> withRetry<T>(
+    Future<T> Function() op, {
+    int attempts = 3,
+  }) async {
+    Object? lastError;
+    for (var i = 0; i < attempts; i++) {
+      try {
+        return await op();
+      } catch (e) {
+        lastError = e;
+        if (i < attempts - 1) {
+          await Future.delayed(Duration(seconds: 1 << i));
+        }
+      }
+    }
+    throw lastError!;
+  }
+
+  Future<void> _fetchOne(HttpClient client, _Job job) async {
     final url =
         'https://cdn.islamic.network/quran/audio/$bitrate/${job.edition}/${job.ayah}.mp3';
     final request = await client.getUrl(Uri.parse(url));

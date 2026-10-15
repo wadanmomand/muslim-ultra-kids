@@ -22,24 +22,34 @@ class DownloadScreen extends StatefulWidget {
 class _DownloadScreenState extends State<DownloadScreen> {
   double _progress = 0;
   bool _downloading = false;
-  String? _error;
+  int _failed = 0;
 
   Future<void> _start() async {
     setState(() {
       _downloading = true;
-      _error = null;
+      _failed = 0;
     });
     try {
-      await widget.state.audioPacks.downloadAll(
+      final failed = await widget.state.audioPacks.downloadAll(
         widget.state.neededAyahs,
         onProgress: (p) => mounted ? setState(() => _progress = p) : null,
       );
-      Sfx.success();
-      await widget.state.markAudioReady();
-      widget.onDone();
+      if (!mounted) return;
+      if (failed == 0) {
+        Sfx.success();
+        await widget.state.markAudioReady();
+        widget.onDone();
+      } else {
+        setState(() {
+          _failed = failed;
+          _downloading = false;
+        });
+      }
     } catch (e) {
+      // Unexpected failure outside per-file handling (e.g. storage).
+      if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _failed = -1;
         _downloading = false;
       });
     }
@@ -102,11 +112,25 @@ class _DownloadScreenState extends State<DownloadScreen> {
                             fontSize: 16, color: KidsTheme.tealDark)),
                   ),
                 ],
-                if (_error != null) ...[
+                if (_failed != 0) ...[
                   const SizedBox(height: 12),
-                  KidsIconLabel('sad', _error!,
-                      iconSize: 32,
-                      style: const TextStyle(color: Colors.red)),
+                  KidsIconLabel(
+                    'sad',
+                    _failed == -1
+                        ? 'Something went wrong. Please try again.'
+                        : '$_failed audio file(s) could not be downloaded. '
+                            'Check your internet and try again — '
+                            'already downloaded files will not be re-downloaded.',
+                    iconSize: 32,
+                    style:
+                        const TextStyle(color: Colors.red, fontSize: 14),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: _start,
+                    child: const KidsIconLabel('replay', 'Try again',
+                        iconSize: 28),
+                  ),
                 ],
               ],
             ),

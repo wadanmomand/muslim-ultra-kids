@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
@@ -240,6 +241,41 @@ void main() {
         ),
       };
       expect(AudioPackManager.neededAyahs(lessons), {1, 6222});
+    });
+  });
+
+  group('AudioPackManager.withRetry', () {
+    test('returns on first success', () async {
+      var calls = 0;
+      final r = await AudioPackManager.withRetry(() async {
+        calls++;
+        return 'ok';
+      });
+      expect(r, 'ok');
+      expect(calls, 1);
+    });
+
+    test('retries transient failures then succeeds', () async {
+      var calls = 0;
+      final r = await AudioPackManager.withRetry(() async {
+        calls++;
+        if (calls < 3) throw const HttpException('connection abort');
+        return 'ok';
+      });
+      expect(r, 'ok');
+      expect(calls, 3);
+    });
+
+    test('rethrows after all attempts fail', () async {
+      var calls = 0;
+      await expectLater(
+        AudioPackManager.withRetry(() async {
+          calls++;
+          throw const HttpException('connection abort');
+        }),
+        throwsA(isA<HttpException>()),
+      );
+      expect(calls, 3);
     });
   });
 
