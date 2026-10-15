@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../engine/game_state.dart';
+import '../engine/models.dart';
 import '../engine/sfx.dart';
 import '../l10n/strings.dart';
 import '../theme/app_theme.dart';
@@ -33,6 +34,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = state.strings;
     final isDark = state.isDark;
+    World? worldById(String id) {
+      for (final w in state.worlds) {
+        if (w.id == id) return w;
+      }
+      return null;
+    }
+    final qaidaWorld = worldById('qaida');
+    final juzWorld = worldById('juzAmma');
     return Scaffold(
       drawer: KidsMenuDrawer(state: state),
       body: Container(
@@ -81,34 +90,28 @@ class HomeScreen extends StatelessWidget {
                           Expanded(
                             child: _WorldCard(
                               icon: 'book',
-                              title: state.worlds.isNotEmpty
-                                  ? state.worlds[0].titleIn(state.lang.code)
-                                  : 'Qaida',
+                              title: qaidaWorld?.titleIn(state.lang.code) ??
+                                  'Qaida',
                               gradient: const [
                                 Color(0xFF3ED6C3),
                                 KidsTheme.tealDark
                               ],
                               onTap: () => _openMap(context,
-                                  focusWorldId: state.worlds.isNotEmpty
-                                      ? state.worlds[0].id
-                                      : null),
+                                  focusWorldId: qaidaWorld?.id),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: _WorldCard(
                               icon: 'moon',
-                              title: state.worlds.length > 1
-                                  ? state.worlds[1].titleIn(state.lang.code)
-                                  : 'Juz Amma',
+                              title: juzWorld?.titleIn(state.lang.code) ??
+                                  'Juz Amma',
                               gradient: const [
                                 Color(0xFFB388EB),
                                 Color(0xFF7B4FD6)
                               ],
                               onTap: () => _openMap(context,
-                                  focusWorldId: state.worlds.length > 1
-                                      ? state.worlds[1].id
-                                      : null),
+                                  focusWorldId: juzWorld?.id),
                             ),
                           ),
                         ],
