@@ -78,7 +78,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     // Brand title (English in every language, over the sky).
                     Positioned(
-                      top: h * 0.115,
+                      top: h * 0.125,
                       left: 0,
                       right: 0,
                       child: Center(
@@ -91,9 +91,9 @@ class HomeScreen extends StatelessWidget {
                     // Noorani Qaida card tap zone.
                     Positioned(
                       left: w * 0.06,
-                      top: h * 0.46,
-                      width: w * 0.44,
-                      height: h * 0.24,
+                      top: h * 0.475,
+                      width: w * 0.43,
+                      height: h * 0.28,
                       child: _TapZone(
                         label: qaidaWorld?.titleIn(state.lang.code) ??
                             'Qaida',
@@ -104,18 +104,18 @@ class HomeScreen extends StatelessWidget {
                     // Qaida card label (over the card's empty lower area).
                     Positioned(
                       left: w * 0.06,
-                      top: h * 0.63,
-                      width: w * 0.44,
+                      top: h * 0.70,
+                      width: w * 0.43,
                       child: _CardLabel(
                         qaidaWorld?.titleIn(state.lang.code) ?? 'Qaida',
                       ),
                     ),
                     // Juz Amma card tap zone.
                     Positioned(
-                      left: w * 0.505,
-                      top: h * 0.46,
-                      width: w * 0.44,
-                      height: h * 0.24,
+                      left: w * 0.51,
+                      top: h * 0.475,
+                      width: w * 0.43,
+                      height: h * 0.28,
                       child: _TapZone(
                         label: juzWorld?.titleIn(state.lang.code) ??
                             'Juz Amma',
@@ -125,9 +125,9 @@ class HomeScreen extends StatelessWidget {
                     ),
                     // Juz Amma card label.
                     Positioned(
-                      left: w * 0.505,
-                      top: h * 0.63,
-                      width: w * 0.44,
+                      left: w * 0.51,
+                      top: h * 0.70,
+                      width: w * 0.43,
                       child: _CardLabel(
                         juzWorld?.titleIn(state.lang.code) ?? 'Juz Amma',
                       ),
@@ -136,16 +136,16 @@ class HomeScreen extends StatelessWidget {
                     Positioned(
                       left: w * 0.14,
                       right: w * 0.14,
-                      top: h * 0.712,
-                      height: h * 0.085,
+                      top: h * 0.785,
+                      height: h * 0.07,
                       child: _AyahOverlay(state: state),
                     ),
-                    // PLAY button tap zone (PLAY text is baked into the art).
+                    // PLAY button tap zone (PLAY is baked into the art).
                     Positioned(
-                      left: w * 0.16,
-                      top: h * 0.82,
-                      width: w * 0.68,
-                      height: h * 0.11,
+                      left: w * 0.40,
+                      top: h * 0.875,
+                      width: w * 0.20,
+                      height: h * 0.095,
                       child: _TapZone(
                         label: strings.get('play'),
                         onTap: () => _openMap(context),
