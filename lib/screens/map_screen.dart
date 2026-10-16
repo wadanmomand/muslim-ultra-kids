@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../engine/game_state.dart';
@@ -28,20 +26,36 @@ class MapScreen extends StatelessWidget {
     final strings = state.strings;
     return Scaffold(
       drawer: KidsMenuDrawer(state: state),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: Builder(builder: (ctx) => const MenuButton()),
         title: BubbleText(strings.get('appName'), fontSize: 24),
       ),
-      body: Container(
-        decoration: BoxDecoration(gradient: KidsTheme.bgFor(state.isDark)),
-        child: Column(
-          children: [
-            Expanded(
-              child: _MapBody(state: state, focusWorldId: focusWorldId),
+      body: Stack(
+        children: [
+          // 3D garden art background (fixed while the nodes scroll above).
+          Positioned.fill(
+            child: Image.asset(
+              'assets/art/map_3d_bg.webp',
+              fit: BoxFit.cover,
             ),
-            const BannerAdFooter(),
-          ],
-        ),
+          ),
+          if (state.isDark)
+            Positioned.fill(
+              child:
+                  Container(color: Colors.black.withValues(alpha: 0.28)),
+            ),
+          Column(
+            children: [
+              Expanded(
+                child: _MapBody(state: state, focusWorldId: focusWorldId),
+              ),
+              const BannerAdFooter(),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -137,12 +151,8 @@ class _MapBodyState extends State<_MapBody> {
         });
       }
     }
-    return Stack(
-      children: [
-        const Positioned.fill(
-          child: CustomPaint(painter: _TrailPainter()),
-        ),
-        ListView.builder(
+    // Lesson nodes scroll over the fixed 3D garden art (set on MapScreen).
+    return ListView.builder(
           padding: const EdgeInsets.symmetric(vertical: 16),
           itemCount: state.worlds.length,
           itemBuilder: (context, wi) {
@@ -193,54 +203,8 @@ class _MapBodyState extends State<_MapBody> {
           ],
         );
       },
-        ),
-      ],
     );
   }
-}
-
-/// Paints a soft dashed winding trail behind the lesson nodes — the 3D map's
-/// candy path.
-class _TrailPainter extends CustomPainter {
-  const _TrailPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.55)
-      ..strokeWidth = 14
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-    final path = Path();
-    const dash = 10.0;
-    const gap = 14.0;
-    var dist = 0.0;
-    const step = 6.0;
-    var drawing = true;
-    var prev = Offset(size.width / 2, 0);
-    path.moveTo(prev.dx, prev.dy);
-    for (var y = step; y <= size.height + step; y += step) {
-      final x = size.width / 2 + size.width * 0.28 * math.sin(y / 140);
-      final p = Offset(x, y);
-      dist += (p - prev).distance;
-      if (dist >= (drawing ? dash : gap)) {
-        if (drawing) {
-          path.lineTo(p.dx, p.dy);
-        } else {
-          path.moveTo(p.dx, p.dy);
-        }
-        dist = 0;
-        drawing = !drawing;
-      } else if (drawing) {
-        path.lineTo(p.dx, p.dy);
-      }
-      prev = p;
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// One shared white pill holding 1-3 big bare 3D stars (no per-star badges,
