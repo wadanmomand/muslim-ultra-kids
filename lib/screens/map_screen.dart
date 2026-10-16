@@ -7,7 +7,7 @@ import '../l10n/strings.dart';
 import '../theme/app_theme.dart';
 import '../widgets/bubble_text.dart';
 import '../widgets/kids_drawer.dart';
-import '../widgets/kids_icon.dart';
+import '../design/icon_3d.dart';
 import 'download_screen.dart';
 import 'lesson_screen.dart';
 
@@ -133,7 +133,16 @@ class _MapBodyState extends State<_MapBody> {
     if (!state.loaded) {
       if (state.loadError != null) {
         return Center(
-            child: KidsIconLabel('sad', state.loadError!, iconSize: 40));
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              state.loadError!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ),
+        );
       }
       return const Center(child: CircularProgressIndicator());
     }
@@ -183,7 +192,7 @@ class _MapBodyState extends State<_MapBody> {
                   if (world.id == 'juzAmma' && state.needsAudioDownload)
                     TextButton.icon(
                       onPressed: () => _openAudioDownload(context),
-                      icon: const KidsIcon('download', size: 26),
+                      icon: const Icon3DWidget(Icon3D.download, size: 26),
                       label: const Text('Download',
                           style: TextStyle(
                               fontSize: 15, fontWeight: FontWeight.w800)),
@@ -240,14 +249,7 @@ class _StarPill extends StatelessWidget {
           count.clamp(1, 3),
           (_) => const Padding(
             padding: EdgeInsets.symmetric(horizontal: 2),
-            child: ClipOval(
-              child: Image(
-                image: AssetImage('assets/icons/star.png'),
-                width: 30,
-                height: 30,
-                fit: BoxFit.cover,
-              ),
-            ),
+            child: Icon3DWidget(Icon3D.star, size: 30),
           ),
         ),
       ),
@@ -325,13 +327,13 @@ class _NodeRow extends StatelessWidget {  final GameState state;
                           : Text('${node.order + 1}',
                               style: const TextStyle(
                                   fontSize: 30, fontWeight: FontWeight.w800)))
-                      : const KidsIcon('lock', size: 56),
+                      : const Icon3DWidget(Icon3D.lock, size: 56),
                 ),
               ),
               if (node.isBoss && unlocked)
                 const Padding(
                   padding: EdgeInsets.only(top: 2),
-                  child: KidsIcon('crown', size: 34),
+                  child: Icon3DWidget(Icon3D.crown, size: 34),
                 ),
             ],
           ),
