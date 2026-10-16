@@ -8,7 +8,7 @@ import '../l10n/strings.dart';
 import '../theme/app_theme.dart';
 import '../widgets/bubble_text.dart';
 import '../widgets/kids_drawer.dart';
-import '../widgets/kids_icon.dart';
+import '../design/icon_3d.dart';
 import 'lesson_screen.dart' show BannerAdFooter;
 import 'map_screen.dart';
 
@@ -326,8 +326,8 @@ class _AyahOverlayState extends State<_AyahOverlay> {
                   ],
                 ),
                 child: Center(
-                  child: KidsIcon(
-                    _playing ? 'hourglass' : 'speaker',
+                  child: Icon3DWidget(
+                    _playing ? Icon3D.hourglass : Icon3D.speaker,
                     size: 30 * scale,
                   ),
                 ),
