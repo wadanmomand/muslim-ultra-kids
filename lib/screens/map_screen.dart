@@ -167,12 +167,17 @@ class _MapBodyState extends State<_MapBody> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
+                    child: BubbleText(
                       world.titleIn(state.lang.code),
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          color: KidsTheme.inkFor(state.isDark)),
+                      fontSize: 30,
+                      textAlign: TextAlign.left,
+                      gradientColors: const [
+                        Color(0xFFFFFFFF),
+                        Color(0xFFDFF3FF),
+                        Color(0xFFBFE3F5),
+                      ],
+                      outlineColor: KidsTheme.tealDark,
+                      depthColor: const Color(0xFF0E5A54),
                     ),
                   ),
                   if (world.id == 'juzAmma' && state.needsAudioDownload)
