@@ -68,30 +68,32 @@ class HomeScreen extends StatelessWidget {
                 final h = constraints.maxHeight;
                 return Stack(
                   children: [
-                    // Hamburger menu (top-left, over empty sky).
-                    const Positioned(
-                      top: 6,
-                      left: 12,
-                      child: MenuButton(),
-                    ),
-                    // Brand title (English in every language, over empty sky).
+                    // Baked golden menu button (top-left of the art).
                     Positioned(
-                      top: h * 0.035,
+                      left: w * 0.03,
+                      top: h * 0.015,
+                      width: w * 0.19,
+                      height: h * 0.085,
+                      child: _DrawerTapZone(),
+                    ),
+                    // Brand title (English in every language, over the sky).
+                    Positioned(
+                      top: h * 0.115,
                       left: 0,
                       right: 0,
                       child: Center(
                         child: BubbleText(
                           strings.get('appName'),
-                          fontSize: 42,
+                          fontSize: 44,
                         ),
                       ),
                     ),
                     // Noorani Qaida card tap zone.
                     Positioned(
-                      left: w * 0.07,
-                      top: h * 0.44,
+                      left: w * 0.06,
+                      top: h * 0.46,
                       width: w * 0.44,
-                      height: h * 0.19,
+                      height: h * 0.24,
                       child: _TapZone(
                         label: qaidaWorld?.titleIn(state.lang.code) ??
                             'Qaida',
@@ -101,8 +103,8 @@ class HomeScreen extends StatelessWidget {
                     ),
                     // Qaida card label (over the card's empty lower area).
                     Positioned(
-                      left: w * 0.07,
-                      top: h * 0.575,
+                      left: w * 0.06,
+                      top: h * 0.63,
                       width: w * 0.44,
                       child: _CardLabel(
                         qaidaWorld?.titleIn(state.lang.code) ?? 'Qaida',
@@ -110,10 +112,10 @@ class HomeScreen extends StatelessWidget {
                     ),
                     // Juz Amma card tap zone.
                     Positioned(
-                      left: w * 0.50,
-                      top: h * 0.44,
+                      left: w * 0.505,
+                      top: h * 0.46,
                       width: w * 0.44,
-                      height: h * 0.19,
+                      height: h * 0.24,
                       child: _TapZone(
                         label: juzWorld?.titleIn(state.lang.code) ??
                             'Juz Amma',
@@ -123,8 +125,8 @@ class HomeScreen extends StatelessWidget {
                     ),
                     // Juz Amma card label.
                     Positioned(
-                      left: w * 0.50,
-                      top: h * 0.575,
+                      left: w * 0.505,
+                      top: h * 0.63,
                       width: w * 0.44,
                       child: _CardLabel(
                         juzWorld?.titleIn(state.lang.code) ?? 'Juz Amma',
@@ -132,18 +134,18 @@ class HomeScreen extends StatelessWidget {
                     ),
                     // Ayah of the Day overlay (over the empty banner plaque).
                     Positioned(
-                      left: w * 0.13,
-                      right: w * 0.13,
-                      top: h * 0.638,
-                      height: h * 0.072,
+                      left: w * 0.14,
+                      right: w * 0.14,
+                      top: h * 0.712,
+                      height: h * 0.085,
                       child: _AyahOverlay(state: state),
                     ),
                     // PLAY button tap zone (PLAY text is baked into the art).
                     Positioned(
-                      left: w * 0.20,
-                      top: h * 0.715,
-                      width: w * 0.60,
-                      height: h * 0.095,
+                      left: w * 0.16,
+                      top: h * 0.82,
+                      width: w * 0.68,
+                      height: h * 0.11,
                       child: _TapZone(
                         label: strings.get('play'),
                         onTap: () => _openMap(context),
@@ -161,6 +163,24 @@ class HomeScreen extends StatelessWidget {
             child: BannerAdFooter(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Transparent tap zone over the baked 3D menu button: opens the drawer.
+class _DrawerTapZone extends StatelessWidget {
+  const _DrawerTapZone();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Menu',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => Scaffold.of(context).openDrawer(),
+        child: const SizedBox.expand(),
       ),
     );
   }
